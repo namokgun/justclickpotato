@@ -2,6 +2,7 @@ const potato = document.getElementById("potato");
 
 const audioContext = new (window.AudioContext || window.webkitAudioContext)();
 
+let popBuffer;
 let tadaBuffer;
 
 let isFries = false;
@@ -10,9 +11,16 @@ let isLocked = false;
 
 // 효과음 불러오기
 async function loadSound() {
-    const response = await fetch("tada.mp3");
-    const arrayBuffer = await response.arrayBuffer();
-    tadaBuffer = await audioContext.decodeAudioData(arrayBuffer);
+    const [popResponse, tadaResponse] = await Promise.all([
+        fetch("pop.mp3"),
+        fetch("tada1.mp3")
+    ]);
+
+    const popArrayBuffer = await popResponse.arrayBuffer();
+    const tadaArrayBuffer = await tadaResponse.arrayBuffer();
+
+    popBuffer = await audioContext.decodeAudioData(popArrayBuffer);
+    tadaBuffer = await audioContext.decodeAudioData(tadaArrayBuffer);
 }
 
 loadSound();
@@ -26,8 +34,19 @@ document.addEventListener("pointerdown", async () => {
 }, { once: true });
 
 
-// 효과음 재생
-function playSound() {
+// pop 효과음 재생
+function playPopSound() {
+    if (!popBuffer) return;
+
+    const source = audioContext.createBufferSource();
+    source.buffer = popBuffer;
+    source.connect(audioContext.destination);
+    source.start();
+}
+
+
+// tada 효과음 재생
+function playTadaSound() {
     if (!tadaBuffer) return;
 
     const source = audioContext.createBufferSource();
@@ -46,6 +65,9 @@ function press(e) {
 
     potato.classList.add("pressed");
 
+    // 기본 효과음
+    playPopSound();
+
     const random = Math.random();
 
 
@@ -60,8 +82,8 @@ function press(e) {
         // 감튀로 변경
         potato.src = "fries.png";
 
-        // 효과음
-        playSound();
+        // 당첨 효과음
+        playTadaSound();
 
 
         // 3초 후 다시 감자
