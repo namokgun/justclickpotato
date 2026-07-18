@@ -4,16 +4,24 @@ const potato = document.getElementById("potato");
 const audioContext = new (window.AudioContext || window.webkitAudioContext)();
 
 let popBuffer;
+let tadaBuffer;
 
 async function loadSound() {
-    const response = await fetch("tada.mp3");
-    const arrayBuffer = await response.arrayBuffer();
-    popBuffer = await audioContext.decodeAudioData(arrayBuffer);
+
+    // pop
+    const popResponse = await fetch("pop.mp3");
+    const popArrayBuffer = await popResponse.arrayBuffer();
+    popBuffer = await audioContext.decodeAudioData(popArrayBuffer);
+
+    // tada
+    const tadaResponse = await fetch("tada1.mp3");
+    const tadaArrayBuffer = await tadaResponse.arrayBuffer();
+    tadaBuffer = await audioContext.decodeAudioData(tadaArrayBuffer);
 }
 
 loadSound();
 
-// 첫 터치 시 오디오 활성화 (모바일 대응)
+// 모바일 브라우저 대응
 document.addEventListener("pointerdown", () => {
     if (audioContext.state === "suspended") {
         audioContext.resume();
@@ -21,16 +29,17 @@ document.addEventListener("pointerdown", () => {
 }, { once: true });
 
 // 효과음 재생
-function playSound() {
-    if (!popBuffer) return;
+function playSound(buffer) {
+
+    if (!buffer) return;
 
     const source = audioContext.createBufferSource();
-    source.buffer = popBuffer;
+    source.buffer = buffer;
     source.connect(audioContext.destination);
     source.start(0);
 }
 
-// ------------------------
+// ----------------------------
 
 let isLocked = false;
 
@@ -39,7 +48,10 @@ function press() {
 
     if (isLocked) return;
 
-    potato.classList.add("pressed");
+    potato.src = "potato2.png";
+
+    // 기본 클릭 소리
+    playSound(popBuffer);
 
     const random = Math.random();
 
@@ -50,11 +62,12 @@ function press() {
 
         potato.src = "fries.png";
 
-        playSound();
+        // 감튀 효과음
+        playSound(tadaBuffer);
 
         setTimeout(() => {
 
-            potato.src = "potato.png";
+            potato.src = "potato1.png";
 
             isLocked = false;
 
@@ -62,9 +75,12 @@ function press() {
     }
 }
 
-// 뗄 때
+// 손 뗄 때
 function release() {
-    potato.classList.remove("pressed");
+
+    if (isLocked) return;
+
+    potato.src = "potato1.png";
 }
 
 // 이벤트
@@ -73,6 +89,6 @@ potato.addEventListener("pointerup", release);
 potato.addEventListener("pointerleave", release);
 potato.addEventListener("pointercancel", release);
 
-// 드래그 및 우클릭 방지
+// 드래그 방지
 potato.addEventListener("dragstart", e => e.preventDefault());
 potato.addEventListener("contextmenu", e => e.preventDefault());
