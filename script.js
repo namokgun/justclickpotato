@@ -7,7 +7,6 @@ let popBuffer;
 let tadaBuffer;
 
 async function loadSound() {
-
     // pop
     const popResponse = await fetch("pop.mp3");
     const popArrayBuffer = await popResponse.arrayBuffer();
@@ -21,7 +20,7 @@ async function loadSound() {
 
 loadSound();
 
-// 모바일 브라우저 대응
+// 첫 클릭 시 오디오 활성화
 document.addEventListener("pointerdown", () => {
     if (audioContext.state === "suspended") {
         audioContext.resume();
@@ -30,7 +29,6 @@ document.addEventListener("pointerdown", () => {
 
 // 효과음 재생
 function playSound(buffer) {
-
     if (!buffer) return;
 
     const source = audioContext.createBufferSource();
@@ -39,8 +37,6 @@ function playSound(buffer) {
     source.start(0);
 }
 
-// ----------------------------
-
 let isLocked = false;
 
 // 누를 때
@@ -48,26 +44,26 @@ function press() {
 
     if (isLocked) return;
 
-    potato.src = "potato2.png";
+    potato.classList.add("pressed");
 
     // 기본 클릭 소리
     playSound(popBuffer);
 
     const random = Math.random();
 
-    // 1% 확률
     if (random < 0.01) {
 
         isLocked = true;
 
+        potato.classList.remove("pressed");
+
         potato.src = "fries.png";
 
-        // 감튀 효과음
         playSound(tadaBuffer);
 
         setTimeout(() => {
 
-            potato.src = "potato1.png";
+            potato.src = "potato.png";
 
             isLocked = false;
 
@@ -75,15 +71,14 @@ function press() {
     }
 }
 
-// 손 뗄 때
+// 뗄 때
 function release() {
 
     if (isLocked) return;
 
-    potato.src = "potato1.png";
+    potato.classList.remove("pressed");
 }
 
-// 이벤트
 potato.addEventListener("pointerdown", press);
 potato.addEventListener("pointerup", release);
 potato.addEventListener("pointerleave", release);
