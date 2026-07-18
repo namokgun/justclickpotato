@@ -1,3 +1,11 @@
+const potato = document.getElementById("potato");
+
+const tadaSound = new Audio("tada.mp3");
+
+let isFries = false;
+
+
+// 클릭
 function clickPotato() {
 
     potato.classList.add("pressed");
@@ -7,6 +15,7 @@ function clickPotato() {
     const random = Math.random();
 
     if (random < 0.01) {
+
         potato.src = "fries.png";
         isFries = true;
 
@@ -16,6 +25,7 @@ function clickPotato() {
 }
 
 
+// 뗄 때
 function releasePotato() {
     potato.classList.remove("pressed");
 }
