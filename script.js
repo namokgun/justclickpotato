@@ -1,89 +1,66 @@
 const potato = document.getElementById("potato");
 
-// 오디오
-const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+const tadaSound = new Audio("tada.mp3");
 
-let popBuffer;
-let tadaBuffer;
-
-async function loadSound() {
-    // pop
-    const popResponse = await fetch("pop.mp3");
-    const popArrayBuffer = await popResponse.arrayBuffer();
-    popBuffer = await audioContext.decodeAudioData(popArrayBuffer);
-
-    // tada
-    const tadaResponse = await fetch("tada1.mp3");
-    const tadaArrayBuffer = await tadaResponse.arrayBuffer();
-    tadaBuffer = await audioContext.decodeAudioData(tadaArrayBuffer);
-}
-
-loadSound();
-
-// 첫 클릭 시 오디오 활성화
-document.addEventListener("pointerdown", () => {
-    if (audioContext.state === "suspended") {
-        audioContext.resume();
-    }
-}, { once: true });
-
-// 효과음 재생
-function playSound(buffer) {
-    if (!buffer) return;
-
-    const source = audioContext.createBufferSource();
-    source.buffer = buffer;
-    source.connect(audioContext.destination);
-    source.start(0);
-}
-
+let isFries = false;
 let isLocked = false;
 
-// 누를 때
-function press() {
 
+// 감자 누르기
+function clickPotato() {
+
+    // 감튀 상태거나 변신 중이면 클릭 무시
     if (isLocked) return;
 
     potato.classList.add("pressed");
 
-    // 기본 클릭 소리
-    playSound(popBuffer);
 
     const random = Math.random();
 
+
+    // 1% 확률
     if (random < 0.01) {
 
         isLocked = true;
+        isFries = true;
 
-        potato.classList.remove("pressed");
 
+        // 감튀로 변경
         potato.src = "fries.png";
 
-        playSound(tadaBuffer);
 
+        // 효과음
+        tadaSound.currentTime = 0;
+        tadaSound.play();
+
+
+        // 3초 후 다시 감자
         setTimeout(() => {
 
             potato.src = "potato.png";
 
+            isFries = false;
             isLocked = false;
 
         }, 3000);
     }
 }
 
-// 뗄 때
-function release() {
 
-    if (isLocked) return;
-
+// 손 뗌
+function releasePotato() {
     potato.classList.remove("pressed");
 }
 
-potato.addEventListener("pointerdown", press);
-potato.addEventListener("pointerup", release);
-potato.addEventListener("pointerleave", release);
-potato.addEventListener("pointercancel", release);
+document.addEventListener("pointerdown", () => {
+    tadaSound.load();
+}, { once: true });
 
-// 드래그 방지
-potato.addEventListener("dragstart", e => e.preventDefault());
-potato.addEventListener("contextmenu", e => e.preventDefault());
+potato.addEventListener("pointerdown", clickPotato);
+potato.addEventListener("pointerup", releasePotato);
+potato.addEventListener("pointerleave", releasePotato);
+potato.addEventListener("pointercancel", releasePotato);
+
+document.addEventListener("touchmove", function (e) {
+    e.preventDefault();
+}, { passive: false });
